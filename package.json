@@ -1,0 +1,18 @@
+{
+    "name": "page-replacement-simulator",
+    "version": "1.0.0",
+    "description": "Page Replacement Algorithm Simulator",
+    "main": "src/main.js",
+    "scripts": {
+        "start": "electron .",
+        "build": "electron-builder"
+    },
+    "author": "kyeisho12",
+    "license": "MIT",
+    "dependencies": {
+        "electron": "^24.0.0"
+    },
+    "devDependencies": {
+        "electron-builder": "^24.0.0"
+    }
+}
