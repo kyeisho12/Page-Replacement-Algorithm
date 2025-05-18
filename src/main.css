@@ -1,0 +1,430 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0 auto;
+    max-width: 1200px;
+    padding: 30px;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+h1 {
+    color: #2196F3;
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 2.5em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.input-section {
+    background-color: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+label {
+    display: inline-block;
+    width: 250px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #444;
+}
+
+input[type="number"] {
+    width: 120px;
+    padding: 8px 12px;
+    margin-bottom: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+input[type="number"]:focus {
+    border-color: #2196F3;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.input-container {
+    margin: 20px 0;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.reference-box {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 30px;
+    background: #fff;
+    border-radius: 4px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+    /* Remove these properties to prevent wrapping */
+    display: inline-block;
+    width: auto;
+    margin: 0;
+}
+
+#pages {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 25px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-weight: 500;
+    color: #444;
+}
+
+#results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.algo-section {
+    background-color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    height: auto;
+    min-height: 400px;
+    max-height: 600px;
+    overflow-y: auto;
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.algo-section.active {
+    display: block;
+}
+
+.algo-section h2 {
+    margin-top: 0;
+    color: #2196F3;
+    border-bottom: 3px solid #2196F3;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+.process-table {
+    margin-top: 15px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+th {
+    background-color: #2196F3;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Scrollbar Styling */
+.algo-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.algo-section::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.algo-section::-webkit-scrollbar-thumb {
+    background: #2196F3;
+    border-radius: 4px;
+}
+
+.algo-section::-webkit-scrollbar-thumb:hover {
+    background: #1976D2;
+}
+
+/* Page Fault Indicator */
+.fault {
+    color: #f44336;
+    font-weight: 600;
+}
+
+.hit {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+/* Add these new styles */
+.simulation-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.memory-visualization {
+    margin: 30px 0;
+    padding: 25px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.frames-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.frame {
+    width: 80px;
+    height: 80px;
+    border: 3px solid #2196F3;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: bold;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.frame.highlight {
+    background: #2196F3;
+    color: white;
+    transform: scale(1.1);
+}
+
+.current-page {
+    padding: 10px;
+    background: #e3f2fd;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#speedControl {
+    width: 100px;
+}
+
+.simulation-controls button {
+    min-width: 100px;
+}
+
+.simulation-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.algorithm-selector {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.algo-tab {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    background: #e3f2fd;
+    color: #2196F3;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.algo-tab.active {
+    background: #2196F3;
+    color: white;
+    transform: scale(1.05);
+}
+
+.algo-tab:hover {
+    background: #bbdefb;
+}
+
+.algo-tab.active:hover {
+    background: #1976D2;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.error-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-left: 4px solid #ff4444;
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+}
+
+.error-message h3 {
+    color: #ff4444;
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.error-message p {
+    margin: 0;
+    color: #666;
+}
+
+.error-message button {
+    margin-top: 15px;
+    padding: 8px 20px;
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    float: right;
+}
+
+.error-message button:hover {
+    background-color: #ff6666;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+/* Custom Modal Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    min-width: 300px;
+}
+
+.modal-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #ff4444;
+}
+
+.modal-body {
+    margin-bottom: 20px;
+}
+
+.modal-footer {
+    text-align: right;
+}
+
+.modal-button {
+    padding: 8px 20px;
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.modal-button:hover {
+    background-color: #ff6666;
+}

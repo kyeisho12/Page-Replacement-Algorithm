@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <title>Page Replacement Algorithms</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+
+    <h1>Page Replacement Algorithms</h1>
+
+    <!-- Input form -->
+    <div class="input-container">
+        <div class="input-group">
+            <label for="frames">Number of Frames:</label>
+            <input type="number" id="frames" min="1" required>
+        </div>
+        
+        <div class="input-group">
+            <label for="length">Length of Page Reference String:</label>
+            <input type="number" id="length" min="1" required>
+        </div>
+
+        <div class="input-group">
+            <label>Generated Reference String:</label>
+            <div class="reference-box" id="pages"></div>
+        </div>
+
+        <div class="button-container">
+            <button onclick="generateString()">Generate Reference String</button>
+            <button onclick="runSimulation()">Run Simulation</button>
+        </div>
+    </div>
+
+    <div class="simulation-controls">
+        <button id="stepBackward" disabled>◀ Previous</button>
+        <button id="playPause">▶ Play</button>
+        <button id="stepForward" disabled>▶ Next</button>
+        <input type="range" id="speedControl" min="0.5" max="2" step="0.5" value="1">
+        <label for="speedControl">Speed: <span id="speedValue">1x</span></label>
+    </div>
+
+    <!-- Replace the results container with this -->
+    <div class="algorithm-selector">
+        <button class="algo-tab active" data-algo="fifo">FIFO</button>
+        <button class="algo-tab" data-algo="lru">LRU</button>
+        <button class="algo-tab" data-algo="optimal">Optimal</button>
+    </div>
+
+    <div id="results">
+        <div class="algo-section active" id="fifo-section">
+            <h2>First In First Out (FIFO)</h2>
+            <div class="memory-visualization">
+                <div class="frames-container" id="fifo-frames"></div>
+                <div class="current-page" id="fifo-current"></div>
+            </div>
+            <p id="fifo"></p>
+        </div>
+
+        <div class="algo-section" id="lru-section">
+            <h2>Least Recently Used (LRU)</h2>
+            <div class="memory-visualization">
+                <div class="frames-container" id="lru-frames"></div>
+                <div class="current-page" id="lru-current"></div>
+            </div>
+            <p id="lru"></p>
+        </div>
+
+        <div class="algo-section" id="optimal-section">
+            <h2>Optimal</h2>
+            <div class="memory-visualization">
+                <div class="frames-container" id="optimal-frames"></div>
+                <div class="current-page" id="optimal-current"></div>
+            </div>
+            <p id="optimal"></p>
+        </div>
+    </div>
+
+    <!-- Add custom alert modal -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div id="customAlert" class="modal">
+            <div class="modal-header">
+                <h3>Error</h3>
+            </div>
+            <div class="modal-body">
+                <p id="customAlertMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeCustomAlert()" class="modal-button">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to generate a random sequence of page references (0-9)
+        function generatePageReferenceString(length) {
+            const pages = [];
+            for (let i = 0; i < length; i++) {
+                // Generate random numbers between 0-9
+                pages.push(Math.floor(Math.random() * 10));
+            }
+            return pages;
+        }
+
+        let currentPageString = [];
+
+        // Replace the existing showError and generateString functions
+        function showError(message) {
+            document.getElementById("customAlertMessage").textContent = message;
+            document.getElementById("modalOverlay").style.display = "flex";
+        }
+
+        function closeCustomAlert() {
+            document.getElementById("modalOverlay").style.display = "none";
+        }
+
+        function generateString() {
+            const length = parseInt(document.getElementById("length").value);
+            if (!length || length < 1) {
+                showError("Please enter a valid length for the reference string");
+                return;
+            }
+
+            // Stop current simulation if running
+            if (simulationState.isPlaying) {
+                clearInterval(simulationState.interval);
+                document.getElementById('playPause').textContent = '▶ Play';
+                simulationState.isPlaying = false;
+            }
+
+            // Reset simulation state
+            simulationState.currentStep = 0;
+            simulationState.results = null;
+
+            // Clear visualizations
+            ['fifo', 'lru', 'optimal'].forEach(algo => {
+                document.getElementById(`${algo}-frames`).innerHTML = '';
+                document.getElementById(`${algo}-current`).textContent = '';
+                document.getElementById(algo).innerHTML = '';
+            });
+
+            // Disable control buttons
+            document.getElementById('stepForward').disabled = true;
+            document.getElementById('stepBackward').disabled = true;
+            document.getElementById('playPause').disabled = true;
+
+            // Generate new reference string
+            currentPageString = generatePageReferenceString(length);
+            document.getElementById("pages").textContent = `${currentPageString.join(", ")}`;
+        }
+
+        // Modify each algorithm function to return both page faults and process steps
+        function fifo(pages, frames) {
+            const memory = [];
+            let pageFaults = 0;
+            const steps = [];
+
+            pages.forEach(page => {
+                const currentState = [...memory];
+                if (!memory.includes(page)) {
+                    if (memory.length === frames) {
+                        memory.shift();
+                    }
+                    memory.push(page);
+                    pageFaults++;
+                    steps.push({
+                        page: page,
+                        memory: [...memory],
+                        fault: true,
+                        action: memory.length === frames ? 'Replace' : 'Insert'
+                    });
+                } else {
+                    steps.push({
+                        page: page,
+                        memory: [...memory],
+                        fault: false,
+                        action: 'Hit'
+                    });
+                }
+            });
+
+            return { pageFaults, steps };
+        }
+
+        function lru(pages, frames) {
+            const memory = [];
+            const recent = [];
+            let pageFaults = 0;
+            const steps = [];
+
+            pages.forEach(page => {
+                if (!memory.includes(page)) {
+                    if (memory.length === frames) {
+                        const lruPage = recent.shift();
+                        memory.splice(memory.indexOf(lruPage), 1);
+                    }
+                    memory.push(page);
+                    pageFaults++;
+                    steps.push({
+                        page: page,
+                        memory: [...memory],
+                        fault: true,
+                        action: memory.length === frames ? 'Replace' : 'Insert'
+                    });
+                } else {
+                    recent.splice(recent.indexOf(page), 1);
+                    steps.push({
+                        page: page,
+                        memory: [...memory],
+                        fault: false,
+                        action: 'Hit'
+                    });
+                }
+                recent.push(page);
+            });
+
+            return { pageFaults, steps };
+        }
+
+        function optimal(pages, frames) {
+            const memory = [];
+            let pageFaults = 0;
+            const steps = [];
+
+            pages.forEach((page, index) => {
+                if (!memory.includes(page)) {
+                    if (memory.length === frames) {
+                        let farthest = -1;
+                        let replaceIndex = -1;
+
+                        memory.forEach((memPage, memIndex) => {
+                            const nextUse = pages.slice(index + 1).indexOf(memPage);
+                            if (nextUse === -1 || nextUse > farthest) {
+                                farthest = nextUse;
+                                replaceIndex = memIndex;
+                            }
+                        });
+
+                        memory.splice(replaceIndex, 1);
+                    }
+                    memory.push(page);
+                    pageFaults++;
+                    steps.push({
+                        page: page,
+                        memory: [...memory],
+                        fault: true,
+                        action: memory.length === frames ? 'Replace' : 'Insert'
+                    });
+                } else {
+                    steps.push({
+                        page: page,
+                        memory: [...memory],
+                        fault: false,
+                        action: 'Hit'
+                    });
+                }
+            });
+
+            return { pageFaults, steps };
+        }
+
+        // Update the validation in runSimulation function
+        function runSimulation() {
+            const frames = parseInt(document.getElementById("frames").value);
+            
+            if (!frames || frames < 1) {
+                showError("Please enter a valid number of frames");
+                return;
+            }
+            
+            if (!currentPageString.length) {
+                showError("Please generate a reference string first");
+                return;
+            }
+
+            // Run algorithms and get results
+            const fifoResult = fifo(currentPageString, frames);
+            const lruResult = lru(currentPageString, frames);
+            const optimalResult = optimal(currentPageString, frames);
+
+            // Display results with process steps
+            function createProcessTable(steps) {
+                let table = '<table border="1"><tr><th>Step</th><th>Page</th><th>Memory State</th><th>Action</th></tr>';
+                steps.forEach((step, index) => {
+                    table += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${step.page}</td>
+                            <td>${step.memory.join(', ')}</td>
+                            <td>${step.fault ? step.action + ' (Fault)' : step.action}</td>
+                        </tr>
+                    `;
+                });
+                table += '</table>';
+                return table;
+            }
+
+            document.getElementById("fifo").innerHTML = `
+                <h3>FIFO Page Faults: ${fifoResult.pageFaults}</h3>
+                <div class="process-table">${createProcessTable(fifoResult.steps)}</div>
+            `;
+
+            document.getElementById("lru").innerHTML = `
+                <h3>LRU Page Faults: ${lruResult.pageFaults}</h3>
+                <div class="process-table">${createProcessTable(lruResult.steps)}</div>
+            `;
+
+            document.getElementById("optimal").innerHTML = `
+                <h3>Optimal Page Faults: ${optimalResult.pageFaults}</h3>
+                <div class="process-table">${createProcessTable(optimalResult.steps)}</div>
+            `;
+
+            simulationState.results = {
+                fifo: fifo(currentPageString, frames),
+                lru: lru(currentPageString, frames),
+                optimal: optimal(currentPageString, frames)
+            };
+            
+            simulationState.currentStep = 0;
+            stepSimulation(0);
+            
+            document.getElementById('stepForward').disabled = false;
+            document.getElementById('playPause').disabled = false;
+        }
+
+        // Add this to your existing script section
+        let simulationState = {
+            currentStep: 0,
+            isPlaying: false,
+            speed: 1,
+            interval: null,
+            results: null
+        };
+
+        function updateVisualization(algorithm, step) {
+            const framesContainer = document.getElementById(`${algorithm}-frames`);
+            const currentPage = document.getElementById(`${algorithm}-current`);
+            
+            framesContainer.innerHTML = '';
+            step.memory.forEach((page, index) => {
+                const frame = document.createElement('div');
+                frame.className = 'frame';
+                if (page === step.page && step.fault) {
+                    frame.classList.add('highlight');
+                }
+                frame.textContent = page;
+                framesContainer.appendChild(frame);
+            });
+            
+            currentPage.textContent = `Current Page: ${step.page} (${step.action})`;
+        }
+
+        function stepSimulation(direction = 1) {
+            const newStep = simulationState.currentStep + direction;
+            if (newStep >= 0 && newStep < simulationState.results.fifo.steps.length) {
+                simulationState.currentStep = newStep;
+                updateVisualization('fifo', simulationState.results.fifo.steps[newStep]);
+                updateVisualization('lru', simulationState.results.lru.steps[newStep]);
+                updateVisualization('optimal', simulationState.results.optimal.steps[newStep]);
+                
+                document.getElementById('stepBackward').disabled = newStep === 0;
+                document.getElementById('stepForward').disabled = newStep === simulationState.results.fifo.steps.length - 1;
+            }
+        }
+
+        // Add event listeners
+        document.getElementById('stepForward').addEventListener('click', () => stepSimulation(1));
+        document.getElementById('stepBackward').addEventListener('click', () => stepSimulation(-1));
+        document.getElementById('playPause').addEventListener('click', function() {
+            if (simulationState.isPlaying) {
+                clearInterval(simulationState.interval);
+                this.textContent = '▶ Play';
+                simulationState.isPlaying = false;
+            } else {
+                // Always start from beginning when clicking play
+                simulationState.currentStep = 0;
+                stepSimulation(0);
+                
+                this.textContent = '⏸ Pause';
+                simulationState.interval = setInterval(() => {
+                    if (simulationState.currentStep < simulationState.results.fifo.steps.length - 1) {
+                        stepSimulation(1);
+                    } else {
+                        // Stop at the end
+                        clearInterval(simulationState.interval);
+                        this.textContent = '▶ Play';
+                        simulationState.isPlaying = false;
+                    }
+                }, 1000 / simulationState.speed);
+                simulationState.isPlaying = true;
+            }
+        });
+
+        document.getElementById('speedControl').addEventListener('input', function() {
+            simulationState.speed = this.value;
+            document.getElementById('speedValue').textContent = this.value + 'x';
+            if (simulationState.isPlaying) {
+                clearInterval(simulationState.interval);
+                document.getElementById('playPause').click();
+            }
+        });
+
+        // Add this after your existing script code
+        document.querySelectorAll('.algo-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update active tab
+                document.querySelectorAll('.algo-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update visible section
+                const algo = tab.dataset.algo;
+                document.querySelectorAll('.algo-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(`${algo}-section`).classList.add('active');
+
+                // Update visualization if simulation is running
+                if (simulationState.results) {
+                    updateVisualization(algo, simulationState.results[algo].steps[simulationState.currentStep]);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
