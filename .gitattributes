@@ -1,4 +1,0 @@
-// filepath: .gitattributes
-*.html linguist-language=JavaScript
-*.css linguist-language=JavaScript
-src/* linguist-vendored=false
